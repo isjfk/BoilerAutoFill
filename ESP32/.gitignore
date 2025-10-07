@@ -1,3 +1,8 @@
+# ESP32 files
+.cache/
+build/
+managed_components/
+
 # Prerequisites
 *.d
 
