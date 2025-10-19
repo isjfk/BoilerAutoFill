@@ -1,4 +1,7 @@
 ### Altium Designer ###
+*.PrjPcbStructure
+*.zip
+*.rar
 
 # Preview folders
 **/__Previews/
