@@ -62,6 +62,7 @@ static const char *TAG = "BAF";
 #define PH_TCA9554_CMD_CONFIG       0x03
 #define PH_PIN_NUM_RELAY_IN         0       // Using TCA9554 P0 as relay control of valve input
 #define PH_PIN_NUM_RELAY_OUT        1       // Using TCA9554 P1 as relay control of valve output
+#define PH_PIN_NUM_BUZZER           2       // Using TCA9554 P2 as buzzer control
 
 // The pixel number in horizontal and vertical
 #define PH_LCD_H_RES                240
@@ -416,8 +417,10 @@ void app_main(void)
     while (true) {
         extio_set_pin_level(PH_PIN_NUM_RELAY_IN, level);
         extio_set_pin_level(PH_PIN_NUM_RELAY_OUT, level);
+        extio_set_pin_level(PH_PIN_NUM_BUZZER, level);
         ESP_LOGI(TAG, "ExtIO%d level: %d", PH_PIN_NUM_RELAY_IN, level);
         ESP_LOGI(TAG, "ExtIO%d level: %d", PH_PIN_NUM_RELAY_OUT, level);
+        ESP_LOGI(TAG, "ExtIO%d level: %d", PH_PIN_NUM_BUZZER, level);
         level = !level;
 
         int raw;
