@@ -64,8 +64,15 @@ static const char *TAG = "BAF";
 #define PH_PIN_NUM_RELAY_OUT        1       // Using TCA9554 P1 as relay control of valve output
 #define PH_PIN_NUM_BUZZER           2       // Using TCA9554 P2 as buzzer control
 
+#define RELAY_ON_LEVEL              1
+#define RELAY_OFF_LEVEL             0
+#define RELAY_INIT_LEVEL            RELAY_OFF_LEVEL
+#define BUZZER_ON_LEVEL             1
+#define BUZZER_OFF_LEVEL            0
+#define BUZZER_INIT_LEVEL           BUZZER_OFF_LEVEL
+
 // The pixel number in horizontal and vertical
-#define PH_LCD_H_RES                240
+#define PH_LCD_H_RES                170
 #define PH_LCD_V_RES                320
 // Bit number used to represent command and parameter
 #define PH_LCD_CMD_BITS             8
@@ -273,6 +280,11 @@ void app_main(void)
     ESP_LOGI(TAG, "Initialize TCA9554 IO Expander");
     extio_init_i2c_dev(bus_handle);
 
+    // Set initial level for relay and buzzer
+    extio_set_pin_level(PH_PIN_NUM_RELAY_IN, RELAY_INIT_LEVEL);
+    extio_set_pin_level(PH_PIN_NUM_RELAY_OUT, RELAY_INIT_LEVEL);
+    extio_set_pin_level(PH_PIN_NUM_BUZZER, BUZZER_INIT_LEVEL);
+
     ESP_LOGI(TAG, "Initialize ADC");
     adc_oneshot_unit_handle_t adc1_handle;
     adc_oneshot_unit_init_cfg_t init_config1 = {
@@ -312,14 +324,18 @@ void app_main(void)
     esp_lcd_panel_handle_t panel_handle = NULL;
     esp_lcd_panel_dev_config_t panel_config = {
         .reset_gpio_num = PH_PIN_NUM_LCD_RST,
-        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_BGR,
+        .rgb_ele_order = LCD_RGB_ELEMENT_ORDER_RGB,
         .bits_per_pixel = 16,
+        .data_endian = LCD_RGB_DATA_ENDIAN_BIG,
+        // .vendor_config = &vendor_config,
     };
     ESP_LOGI(TAG, "Install ST7789 panel driver");
     ESP_ERROR_CHECK(esp_lcd_new_panel_st7789(io_handle, &panel_config, &panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_reset(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_init(panel_handle));
     ESP_ERROR_CHECK(esp_lcd_panel_mirror(panel_handle, false, false));
+    ESP_ERROR_CHECK(esp_lcd_panel_invert_color(panel_handle, true));
+    ESP_ERROR_CHECK(esp_lcd_panel_set_gap(panel_handle, 35, 0));
 
     // user can flush pre-defined pattern to the screen before we turn on the screen or backlight
     ESP_ERROR_CHECK(esp_lcd_panel_disp_on_off(panel_handle, true));
@@ -417,10 +433,8 @@ void app_main(void)
     while (true) {
         extio_set_pin_level(PH_PIN_NUM_RELAY_IN, level);
         extio_set_pin_level(PH_PIN_NUM_RELAY_OUT, level);
-        extio_set_pin_level(PH_PIN_NUM_BUZZER, level);
         ESP_LOGI(TAG, "ExtIO%d level: %d", PH_PIN_NUM_RELAY_IN, level);
         ESP_LOGI(TAG, "ExtIO%d level: %d", PH_PIN_NUM_RELAY_OUT, level);
-        ESP_LOGI(TAG, "ExtIO%d level: %d", PH_PIN_NUM_BUZZER, level);
         level = !level;
 
         int raw;
