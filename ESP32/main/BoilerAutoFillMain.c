@@ -300,8 +300,8 @@ void app_main(void)
 
     // Calibration
     adc_cali_handle_t adc1_cali_ps_handle = NULL;
-    bool adc_calibration1 = adc_calibration_init(ADC_UNIT_1, PH_PIN_NUM_PRESSURE_SENSOR, config.atten, &adc1_cali_ps_handle);
-    if (adc_calibration1) {
+    bool adc_cal_succ = adc_calibration_init(ADC_UNIT_1, PH_PIN_NUM_PRESSURE_SENSOR, config.atten, &adc1_cali_ps_handle);
+    if (adc_cal_succ) {
         ESP_LOGI(TAG, "ADC1 channel %d calibration success", PH_PIN_NUM_PRESSURE_SENSOR);
     } else {
         ESP_LOGW(TAG, "ADC1 channel %d calibration failed", PH_PIN_NUM_PRESSURE_SENSOR);
@@ -441,9 +441,17 @@ void app_main(void)
         int voltage;
         ESP_ERROR_CHECK(adc_oneshot_read(adc1_handle, PH_PIN_NUM_PRESSURE_SENSOR, &raw));
         ESP_LOGI(TAG, "ADC%d Channel[%d] Raw Data: %d", ADC_UNIT_1 + 1, PH_PIN_NUM_PRESSURE_SENSOR, raw);
-        if (adc_calibration1) {
+        if (adc_cal_succ) {
             ESP_ERROR_CHECK(adc_cali_raw_to_voltage(adc1_cali_ps_handle, raw, &voltage));
             ESP_LOGI(TAG, "ADC%d Channel[%d] Cali Voltage: %d mV", ADC_UNIT_1 + 1, PH_PIN_NUM_PRESSURE_SENSOR, voltage);
+
+            // Pressure sensor outputs 0-3.6V corresponding to 0-10 bar
+            float pressure = voltage / 3600.0 * 10.0;
+            ESP_LOGI(TAG, "Pressure: %.2f bar", pressure);
+
+            _lock_acquire(&lvgl_api_lock);
+            lvglSetPressure(pressure);
+            _lock_release(&lvgl_api_lock);
         }
 
         vTaskDelay(pdMS_TO_TICKS(1000));
