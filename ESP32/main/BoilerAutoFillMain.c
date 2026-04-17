@@ -82,7 +82,7 @@ static const char *TAG = "BAF";
 #define PH_LVGL_TICK_PERIOD_MS      2
 #define PH_LVGL_TASK_MAX_DELAY_MS   500
 #define PH_LVGL_TASK_MIN_DELAY_MS   1000 / CONFIG_FREERTOS_HZ
-#define PH_LVGL_TASK_STACK_SIZE     (4 * 1024)
+#define PH_LVGL_TASK_STACK_SIZE     (8 * 1024)
 #define PH_LVGL_TASK_PRIORITY       2
 
 i2c_master_dev_handle_t tca9554_dev;
